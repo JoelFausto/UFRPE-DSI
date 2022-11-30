@@ -1,6 +1,6 @@
 // UFRPE- Desenvolvimento de Sistemas de Informação 2022.1
 // Aluno: Joel Fausto
-// Atividade 2
+// Atividade 3
 
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
@@ -37,39 +37,6 @@ class RandomWords extends StatefulWidget {
 
 class _RandomWordsState extends State<RandomWords> {
 
-  // Tela de favoritos
-  void _pushSaved() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          final tiles = _saved.map(
-            (pair){
-              return ListTile(
-                title: Text(
-                  pair.asPascalCase,
-                  style: _biggerFont,
-                ),
-              );
-            },
-          );
-          final divided = tiles.isNotEmpty
-              ? ListTile.divideTiles(
-                  context: context,
-                  tiles: tiles,
-                ).toList()
-              : <Widget>[];
-
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Saved Suggestions'),
-            ),
-            body: ListView(children: divided),
-          );
-        },
-      ), // ...to here.
-    );
-  }
-
   final _suggestions = <WordPair>[];
   final _saved = <WordPair>{};
   final _biggerFont = const TextStyle(fontSize: 18);
@@ -99,13 +66,46 @@ class _RandomWordsState extends State<RandomWords> {
                 });
               }),
               tooltip:
-              cardMode ? 'List Vizualization' : 'Card Mode Vizualization',
+                cardMode ? 'List Vizualization' : 'Card Mode Vizualization',
               icon: const Icon(Icons.auto_fix_normal_outlined),
             ),
           ],
         ),
 
         body: _buildSuggestions(cardMode));
+  }
+
+  // Tela de favoritos
+  void _pushSaved() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) {
+          final tiles = _saved.map(
+            (pair){
+              return ListTile(
+                title: Text(
+                  pair.asPascalCase,
+                  style: _biggerFont,
+                ),
+              );
+            },
+          );
+          final divided = tiles.isNotEmpty
+              ? ListTile.divideTiles(
+                  context: context,
+                  tiles: tiles,
+                ).toList()
+              : <Widget>[];
+
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Saved Suggestions'),
+            ),
+            body: ListView(children: divided),
+          );
+        },
+      ),
+    );
   }
 
     Widget _buildSuggestions(bool cardMode) {
@@ -129,27 +129,72 @@ class _RandomWordsState extends State<RandomWords> {
 
     //Building list Rows
     Widget _buildRow(WordPair pair, int index) {
-      final alreadySaved = _saved.contains(_suggestions[
-      index]);
-      return ListTile(
+      final alreadySaved = _saved.contains(_suggestions[index]);
+      var color = Colors.transparent;
+      final item = pair.asPascalCase;
+      return Dismissible(
+        key: Key(item),
+        direction: DismissDirection.endToStart,
+        onDismissed: (direction) {
+          setState(() {
+            if (alreadySaved) {
+              _saved.remove(_suggestions[index]);
+            }
+            _suggestions.removeAt(index);
+          });
+        },
+        background: Container(
+          color: Color.fromARGB(255, 255, 0, 0),
+          padding: EdgeInsets.all(8.0),
+          alignment: Alignment.centerRight,
+          child: const Text(
+            "Deletar",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        ), 
+        child: ListTile(
           title: Text(
             _suggestions[index].asPascalCase,
             style: _biggerFont,
           ),
-          trailing: Icon(alreadySaved ? Icons.favorite : Icons.favorite_border,
-              color: alreadySaved ? const Color.fromARGB(223, 255, 7, 7) : null,
-              semanticLabel: alreadySaved ? 'Remove from saved' : 'Save'),
           onTap: () {
-            setState(() {
-              if (alreadySaved) {
-                _saved.remove(_suggestions[index]);
-              } else {
-                _saved.add(_suggestions[index]);
-              }
-            });
-          });
+            _editWordPair();
+          },
+          trailing: IconButton(
+            icon: Icon(alreadySaved ? Icons.favorite : Icons.favorite_border, 
+              color: alreadySaved ? const Color.fromARGB(255, 255, 0, 0) : null,
+              semanticLabel: alreadySaved ? 'Remove from saved' : 'Save'),
+            tooltip: "Favorite",
+            hoverColor: color,
+            onPressed: () {
+              setState(() {
+                if (alreadySaved) {
+                  _saved.remove(_suggestions[index]);
+                } else {
+                  _saved.add(_suggestions[index]);
+                }
+              });
+            }),
+        ),
+        );
+      
     }
 
+    void _editWordPair() {
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (BuildContext context) {
+      return Scaffold(
+          appBar: AppBar(
+            title: const Text("Edit WordPair"),
+          ),
+          body: const Center(
+            child: Text("Página em construção..."),
+          ));
+    }));
+  }
+  
     //Building cards vizualization
     Widget _cardVizualizaton() {
       return GridView.builder(
@@ -172,3 +217,4 @@ class _RandomWordsState extends State<RandomWords> {
       );
     }
   }
+
