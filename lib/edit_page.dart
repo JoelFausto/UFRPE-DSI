@@ -1,21 +1,27 @@
-import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
-import 'package:startup_namer/main.dart';
+import 'ParPalavra.dart';
 
-class EditScreen extends StatelessWidget {
+class EditScreen extends StatefulWidget {
   const EditScreen({Key? key}) : super(key: key);
+  static const routeName = '/edit';
+
+  @override
+  State<EditScreen> createState() => _EditScreenState();
+}
+
+class _EditScreenState extends State<EditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    WordPair args = ModalRoute.of(context)!.settings.arguments as WordPair;
-    ParPalavra word = ModalRoute.of(context)!.settings.arguments as ParPalavra;
-    late WordPair _wordPair;
-    late String newFirstWord;
-    late String newSecondWord;
+    final args = (ModalRoute.of(context)?.settings.arguments ?? <List, ParPalavra>{}) as Map;
+    var palavra = args['palavra'];
+    List<ParPalavra> ParPalavraList = args['parPalavra'];
+    final TextEditingController wordOne = TextEditingController();
+    final TextEditingController wordTwo = TextEditingController();
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Second Screen'),
+          title: const Text('Edit Word'),
         ),
         body: Container(
           padding: const EdgeInsets.all(20.0),
@@ -24,17 +30,15 @@ class EditScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextFormField(
-                initialValue: args.first,
-                decoration: const InputDecoration(
-                    hintText: "Insira a primeira palavra"),
-                onChanged: (newValue) => newFirstWord = newValue,
+                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(hintText: "Insira a primeira palavra"),
+                controller: wordOne,
               ),
               TextFormField(
-                  keyboardType: TextInputType.text,
-                  initialValue: args.second,
-                  decoration: const InputDecoration(
-                      hintText: "Insira a segunda palavra"),
-                  onChanged: (newValue) => newSecondWord = newValue),
+                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(hintText: "Insira a segunda palavra"),
+                controller: wordTwo,
+              ),
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20.0),
@@ -44,7 +48,16 @@ class EditScreen extends StatelessWidget {
                           primary: const Color.fromARGB(255, 255, 0, 0),
                           fixedSize: const Size(100, 40)),
                       onPressed: () {
-                        Navigator.pop(context);
+                        setState(() {
+                          if (palavra == true) {
+                            ParPalavraList.insert(0, ParPalavra(wordOne.text, wordTwo.text));
+                            palavra == false;
+                          } else {
+                            ParPalavraList[ParPalavraList.indexOf(palavra)] = ParPalavra(wordOne.text, wordTwo.text);
+                          }
+
+                          Navigator.popAndPushNamed(context, '/');
+                        });
                       },
                       child: const Text(
                         'Enviar',
@@ -57,3 +70,4 @@ class EditScreen extends StatelessWidget {
         ));
   }
 }
+    

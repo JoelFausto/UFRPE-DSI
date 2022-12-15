@@ -1,60 +1,14 @@
-// UFRPE- Desenvolvimento de Sistemas de Informação 2022.1
-// Aluno: Joel Fausto
-// Atividade 4
-
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'edit_page.dart';
+import 'ParPalavra.dart';
+import 'package:startup_namer/RepositoryParPalavra.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class ParPalavra {
-  String firstWord = '';
-  String secondWord = '';
-
-  ParPalavra(this.firstWord, this.secondWord);
-
-  factory ParPalavra.constructor() {
-    WordPair word = generateWordPairs().first;
-    ParPalavra p = ParPalavra(word.first, word.second);
-    return p;
-  }
-
-  String CreateAsPascalCase() {
-    return "${firstWord[0].toUpperCase() + firstWord.substring(1)}${secondWord[0].toUpperCase() + secondWord.substring(1)}";
-  }
-
-  late final asPascalCase = CreateAsPascalCase();
-}
-
-class RepositoryParPalavra {
-  final _suggestions = <ParPalavra>[];
-
-  void CreateParPalavra(int num) {
-    for (int i = 0; i < num; i++) {
-      _suggestions.add(ParPalavra.constructor());
-    }
-  }
-
-  RepositoryParPalavra() {
-    CreateParPalavra(20);
-  }
-
-  List getAll() {
-    return _suggestions;
-  }
-
-  ParPalavra getByIndex(int index) {
-    return _suggestions[index];
-  }
-
-  void removeParPalavra(ParPalavra word) {
-    _suggestions.remove(word);
-  }
-}
-
-RepositoryParPalavra repositoryParPalavra = new RepositoryParPalavra();
+RepositoryParPalavra repositoryParPalavra = RepositoryParPalavra();
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -90,6 +44,7 @@ class _RandomWordsState extends State<RandomWords> {
   final _saved = <ParPalavra>{};
   final _biggerFont = const TextStyle(fontSize: 18);
   bool cardMode = false;
+  bool screenEditmode = false;
   String nome = "Startup Name Generator";
 
   @override
@@ -119,6 +74,17 @@ class _RandomWordsState extends State<RandomWords> {
               tooltip:
                   cardMode ? 'List Vizualization' : 'Card Mode Vizualization',
               icon: Icon(Icons.auto_fix_normal_outlined),
+            ),
+            IconButton(
+              icon: const Icon(Icons.plus_one),
+              tooltip: 'Add new word',
+              onPressed: () {
+                screenEditmode = true;
+                setState(() {
+                  Navigator.popAndPushNamed(context, '/edit', 
+                  arguments: { 'parPalavra' : repositoryParPalavra.getAll(), 'palavra' : screenEditmode });
+                });
+              }
             ),
           ],
         ),
@@ -233,8 +199,8 @@ class _RandomWordsState extends State<RandomWords> {
             onTap: () {
               setState(() {
                 Navigator.popAndPushNamed(context, '/edit', arguments: {
-                  'parPalavra': repositoryParPalavra.getAll(),
-                  'palavra':pair,
+                  'parPalavra' : repositoryParPalavra.getAll(),
+                  'palavra' : pair,
                 });
               });
             }));
@@ -261,68 +227,3 @@ class _RandomWordsState extends State<RandomWords> {
       );
     }
   }
-
-class EditScreen extends StatefulWidget {
-  const EditScreen({Key? key}) : super(key: key);
-  static const routeName = '/edit';
-
-  @override
-  State<EditScreen> createState() => _EditScreenState();
-}
-
-class _EditScreenState extends State<EditScreen> {
-  @override
-  Widget build(BuildContext context) {
-    final args = (ModalRoute.of(context)?.settings.arguments ??
-        <List, ParPalavra>{}) as Map;
-    ParPalavra palavra = args['palavra'];
-    List<ParPalavra> ParPalavraList = args['parPalavra'];
-
-    final TextEditingController wordOne = TextEditingController();
-    final TextEditingController wordTwo = TextEditingController();
-
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Edite a palavra'),
-        ),
-        body: Container(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-              child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextFormField(
-                keyboardType: TextInputType.text,
-                decoration: const InputDecoration(hintText: "Insira a 1° palavra"),
-                controller: wordOne,
-              ),
-              TextFormField(
-                keyboardType: TextInputType.text,
-                decoration: const InputDecoration(hintText: "Insira a 2° palavra"),
-                controller: wordTwo,
-              ),
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20.0),
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 37, 52, 190),
-                          fixedSize: const Size(100, 40)),
-                      onPressed: () {
-                        setState(() {
-                          ParPalavraList[ParPalavraList.indexOf(palavra)] =
-                              ParPalavra(wordOne.text, wordTwo.text);
-                          Navigator.popAndPushNamed(context, '/');
-                        });
-                      },
-                      child: const Text(
-                        'Enviar',
-                        style: TextStyle(fontSize: 16),
-                      )),
-                ),
-              ),
-            ],
-          )),
-        ));
-  }
-}
